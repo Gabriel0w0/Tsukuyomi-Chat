@@ -6,7 +6,7 @@
 ![NVIDIA CUDA](https://img.shields.io/badge/NVIDIA-CUDA_BitsAndBytes-76B900?logo=nvidia&logoColor=white)
 ![Live2D](https://img.shields.io/badge/Live2D-Cubism_4-ff69b4)
 
-An interactive, emotionally expressive virtual desktop companion and local AI research assistant. **Tsukuyomi-chan (月讀醬)** seamlessly integrates **Live2D animation**, **real-time token streaming with Chain-of-Thought (CoT) folding**, **dual-model memory & voice synthesis**, **cross-platform GPU acceleration (macOS MLX & Windows/Linux CUDA)**, and a **Hybrid Local/Web RAG engine** into a unified glassmorphism web experience.
+An interactive, emotionally expressive virtual desktop companion and local AI research assistant built with a **Zero-LangChain native architecture**. **Tsukuyomi-chan (月讀醬)** seamlessly integrates **Live2D animation**, **real-time interruptible token streaming with Chain-of-Thought (CoT) folding**, a **four-stage structured long-term memory system**, **cross-platform GPU acceleration (macOS MLX & Windows/Linux CUDA)**, and a **Hybrid Local/Web RAG engine** into a unified glassmorphism web experience.
 
 ---
 
@@ -19,18 +19,22 @@ An interactive, emotionally expressive virtual desktop companion and local AI re
   * **macOS (Apple Silicon)**: Native **MLX (`mlx-lm`)** acceleration running on a dedicated single-thread Metal GPU worker (`ThreadPoolExecutor(max_workers=1)`) with explicit stream binding—completely eliminating cross-thread Metal stream crashes.
   * **Windows / Linux (NVIDIA CUDA)**: Automatic fallback to **PyTorch `transformers`** + **`bitsandbytes` (4-bit NF4 / 8-bit)** quantization and `TextIteratorStreamer`, featuring automatic model ID mapping from `mlx-community/*` to standard HuggingFace repositories.
   * **Zero-Leak Hot-Swapping**: Switch between models (e.g., *Gemma 3 4B*, *Gemma 4 E4B*, *Gemma 3 12B*) directly from the UI with explicit weight unloading and VRAM/Unified Memory cache clearing.
-* **🧠 Dual-Model Architecture & Memory Anchor**:
-  * **Main Chat / Research LLM**: Handles persona dialogue, reasoning (`<|channel>thought` / `<think>`), code review, and report synthesis.
-  * **Dedicated 1B Auxiliary LLM (`gemma-3-1b-it-4bit`)**: Stays lightweight in the background to perform ultra-fast **Long-Term Memory JSON extraction** and **Japanese TTS translation** without thinking-token overhead or main model interruption.
-  * **Memory Anchor in RAG/Search**: Automatically pins user memory profiles to the tail of long retrieval contexts so Tsukuyomi never forgets personal facts even during heavy web/document searches.
-* **⚡ Real-Time NDJSON Token Streaming**:
-  * Live character-by-character output via `/chat/stream` with real-time separation of collapsible reasoning blocks (`月讀醬的深度思考過程`) and clean spoken dialogue.
+* **🧠 Four-Stage Long-Term Memory System (`memory_manager.py`) & Memory Inspector**:
+  * **Storage**: Dual-track storage combining a structured SQLite table (`memory_items` with `core` / `preference` / `episodic` types, importance scores, timestamps, and access counts) with ChromaDB semantic vectors (reusing the shared `BGE-Small` embedder) and automatic migration from legacy memory tables.
+  * **Retrieval**: Dual-path recall pairing always-on **Core User Profiles** with **Hybrid BGE + BM25** dynamic retrieval ranked by semantic relevance, time decay, and importance.
+  * **Update**: Background 1B auxiliary LLM (`gemma-3-1b-it-4bit`) executes a two-step extraction and semantic conflict-resolution state machine (`ADD` / `UPDATE` / `DELETE` / `NOOP`) with importance-aware eviction.
+  * **Generation & Inspector UI**: Injects layered memory blocks with relative time markers into prompts, and provides an in-app **Memory Inspector Modal** (`/api/memory`) to view, add, edit, or delete individual memory notes.
+* **⚡ Real-Time NDJSON Streaming & Instant Stop**:
+  * Live token-by-token streaming via `/chat/stream` with real-time separation of collapsible reasoning blocks (`月讀醬的深度思考過程`) and clean spoken dialogue.
+  * **True Generation Interruption**: Click the stop button mid-generation to abort via frontend `AbortController` and trigger a backend `threading.Event` signal—immediately halting GPU inference, skipping TTS synthesis, and preserving partial output.
 * **📎 Hybrid Local RAG for Code & Academic Papers (`local_file_rag.py`)**:
   * **Line & Page Precision**: Splits C/C++/Python source code with exact line intervals (`Lines X-Y`) and parses PDF papers with page citations (`Page P`).
-  * **Ensemble Retrieval**: Combines **BM25** (0.45 weight, custom C++ snake_case + English + Jieba tokenizer) and dense **BGE-Small (`BAAI/bge-small-zh-v1.5`)** vector embeddings (0.55 weight) via ChromaDB.
-* **🌐 Live Web Search & Autonomous Research Studio**:
-  * One-click **Tavily Web Search** toggle in chat with smart bypass for personal memory queries.
+  * **Ensemble Retrieval & Per-File Toggle**: Combines **BM25** (custom C++ snake_case + English + Jieba tokenizer) and dense **BGE-Small (`BAAI/bge-small-zh-v1.5`)** embeddings via ChromaDB, with per-file checkboxes and Select All controls in the right-side RAG panel.
+* **🌐 Enhanced Live Web Search & Autonomous Research Studio**:
+  * One-click **Tavily Web Search** toggle featuring Chinese query normalization, `search_depth="advanced"`, relevance score filtering (`score >= 0.42`), and smart bypass for personal memory recall queries.
   * Dedicated **Research Mode** for automated multi-section report generation, progress tracking, and Markdown/JSON/TXT export.
+* **🎨 Polished Glassmorphism UI**:
+  * Custom dark purple-pink glassmorphism prompt and confirmation modals replacing native browser `prompt()` / `confirm()` dialogs, with IME-safe Enter handling for Traditional Chinese input methods.
 * **🗣️ Japanese Voice Synthesis (VOICEVOX)**:
   * Translates Tsukuyomi's replies into cute Japanese maid dialogue via the 1B auxiliary model and synthesizes voice audio using local **VOICEVOX** (*Catshibi / 猫使ビィ*).
 
@@ -40,13 +44,14 @@ An interactive, emotionally expressive virtual desktop companion and local AI re
 
 ```mermaid
 graph TD
-    User([User / Browser]) <-->|HTTP / NDJSON Stream| API[FastAPI Backend - app.py]
+    User([User / Browser]) <-->|HTTP / NDJSON Stream + Abort| API[FastAPI Backend - app.py]
 
     subgraph "Frontend Layer (Glassmorphism UI)"
         UI[Chat & Research UI] <--> Live2D[Live2D Cubism 4 - Hiyori]
         UI -->|Real-time CoT Parser| CoT[Collapsible Thinking Box]
-        UI -->|File / Folder Upload| LocalDrop[Local RAG Panel]
-        UI -->|Hot-Swap & Sliders| Settings[Dynamic Settings Modal]
+        UI -->|Per-File Toggle & Upload| LocalDrop[Local RAG Panel]
+        UI -->|CRUD Notes| MemUI[Memory Inspector Modal]
+        UI -->|Hot-Swap & Sliders| Settings[Dynamic Settings & Custom Modals]
     end
 
     subgraph "Cross-Platform Dual LLM Engine (mlx_engine.py)"
@@ -57,9 +62,11 @@ graph TD
         AuxLLM <--> Hardware
     end
 
-    subgraph "Memory & Voice Pipeline"
-        API -->|Background Task| AuxLLM
-        AuxLLM -->|raw_decode JSON| SQLite[(SQLite: user_memory & user_settings)]
+    subgraph "4-Stage Memory & Voice Pipeline"
+        API <--> MemSys[MemorySystemManager - memory_manager.py]
+        MemSys <--> AuxLLM
+        MemSys <--> SQLite[(SQLite: memory_items, intimacy & settings)]
+        MemSys <--> MemVec[(ChromaDB: user_memory_vectors)]
         AuxLLM -->|Fast JP Translation| TTS[VOICEVOX Engine :50021]
         TTS -->|WAV Audio| UI
     end
@@ -71,6 +78,7 @@ graph TD
         API <--> Tavily[Tavily Search API]
         API <--> Research[Autonomous Researcher - service.py]
     end
+
 ```
 
 ---
@@ -78,8 +86,10 @@ graph TD
 ## 📋 Prerequisites
 
 * **Operating System**:
-  * **macOS**: Apple Silicon (M1/M2/M3/M4) for native MLX Metal acceleration.
-  * **Windows / Linux**: NVIDIA GPU with CUDA 12.x support (or CPU fallback).
+* **macOS**: Apple Silicon (M1/M2/M3/M4) for native MLX Metal acceleration.
+* **Windows / Linux**: NVIDIA GPU with CUDA 12.x support (or CPU fallback).
+
+
 * **Python**: `3.10` or higher (recommended to manage via `uv` or `venv`).
 * **VOICEVOX Engine** (Optional, required for Japanese TTS voice playback).
 * **Tavily API Key** (Optional, required for real-time web search and autonomous research).
@@ -91,20 +101,24 @@ graph TD
 ### 1. Clone the Repository
 
 ```bash
-git clone [https://github.com/Gabriel0w0/tsukuyomi-chat.git](https://github.com/Gabriel0w0/tsukuyomi-chat.git)
+git clone https://github.com/Gabriel0w0/tsukuyomi-chat.git
 cd tsukuyomi-chat
+
 ```
 
 ### 2. Install Dependencies
 
-#### Option A: macOS (Apple Silicon — MLX) recommend
+#### Option A: macOS (Apple Silicon — MLX) *(Recommended)*
+
 ```bash
 uv venv
 source .venv/bin/activate
 uv pip install -r requirements.txt
+
 ```
 
-#### Option B: Windows / Linux (NVIDIA CUDA — PyTorch + BitsAndBytes) Not yet tested
+#### Option B: Windows / Linux (NVIDIA CUDA — PyTorch + BitsAndBytes) *(Experimental / Untested)*
+
 ```bash
 python -m venv .venv
 # Activate on Linux/macOS: source .venv/bin/activate
@@ -118,10 +132,12 @@ python -m pip install -r requirements.txt
 
 # 3. Force-install PyTorch with NVIDIA CUDA support (prevents CPU-only overwrite)
 python -m pip uninstall -y torch torchvision torchaudio
-python -m pip install torch torchvision torchaudio --index-url [https://download.pytorch.org/whl/cu126](https://download.pytorch.org/whl/cu126) --no-deps
+python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126 --no-deps
 
 # 4. Verify GPU detection (should print: True | NVIDIA GeForce ...)
 python -c "import torch; print(torch.cuda.is_available(), '|', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'No GPU')"
+
+```
 
 ### 3. Start VOICEVOX Engine (Optional, for TTS)
 
@@ -133,6 +149,7 @@ docker run -d --name voicevox_engine -p 50021:50021 voicevox/voicevox_engine:lat
 
 # NVIDIA GPU (Linux / Windows):
 docker run -d --gpus all --name voicevox_engine -p 50021:50021 voicevox/voicevox_engine:nvidia-latest
+
 ```
 
 ### 4. Configuration (`config.py`)
@@ -140,13 +157,13 @@ docker run -d --gpus all --name voicevox_engine -p 50021:50021 voicevox/voicevox
 Review `config.py` for default parameters (all can be dynamically adjusted later in the Web UI Settings):
 
 | Parameter | Default Value | Description |
-| :--- | :--- | :--- |
+| --- | --- | --- |
 | `CHAT_MODEL` | `"mlx-community/gemma-3-4b-it-8bit"` | Default model for daily chat (auto-maps to HF on CUDA) |
 | `RESEARCH_MODEL` | `"mlx-community/gemma-3-12b-it-4bit"` | Model for in-depth research report synthesis |
 | `MEMORY_MODEL_ID` | `"mlx-community/gemma-3-1b-it-4bit"` | Lightweight 1B model for memory JSON extraction & TTS translation |
 | `MAX_TOKENS` | `8192` | Maximum generation / context window tokens |
 | `MAX_MEMORY` | `10` | Short-term conversation turns sent to the LLM |
-| `MAX_FACTS_PER_USER` | `20` | Maximum long-term user facts stored in SQLite |
+| `MAX_FACTS_PER_USER` | `20` | Maximum active long-term user memories stored in SQLite |
 
 ---
 
@@ -156,24 +173,37 @@ Start the FastAPI server with `uvicorn`:
 
 ```bash
 uvicorn app:app --host 127.0.0.1 --port 5000 --reload
+
 ```
 
 Open your browser and navigate to:
-👉 **`http://127.0.0.1:5000`**
+👉 **`[http://127.0.0.1:5000](http://127.0.0.1:5000)`**
 
 ### Core Workflows:
 
-1. **Interactive Chat & Quick Model Switcher (`Chat`)**:
-   * Chat with Tsukuyomi-chan with real-time token streaming.
-   * Click the **Model Badge** above the input bar to hot-swap between *Gemma 3 (4B)*, *Gemma 4 (E4B)*, or any custom HuggingFace/local model ID.
-   * Click the **Globe (🌐)** button to enable live web search while retaining your personal memory profile.
-2. **Code & Paper Hybrid RAG (`📎 Paperclip`)**:
-   * Upload individual `.pdf`, `.cpp`, `.h`, `.py`, `.tex`, `.md` files or an entire project folder.
-   * Tsukuyomi will analyze your code or paper and cite exact **line numbers (`Lines X-Y`)** or **page numbers (`Page P`)**.
-3. **Autonomous Research Studio (`Research`)**:
-   * Enter a research topic to automatically plan an outline, crawl web sources, and compile a structured report with Markdown/JSON export.
-4. **Personalized Settings (`⚙️ Settings`)**:
-   * Adjust theme, font size, Tavily API Key, `CHAT_MODEL`, `RESEARCH_MODEL`, `MEMORY_MODEL_ID`, `MAX_TOKENS`, `MAX_MEMORY`, and `MAX_FACTS_PER_USER` in real time.
+1. **Interactive Chat, Quick Model Switcher & Stop Control (`Chat`)**:
+* Chat with Tsukuyomi-chan with real-time token streaming; click the **Stop (⏹)** button anytime to immediately cancel inference and keep partial output.
+* Click the **Model Badge** inside the input toolbar to hot-swap between *Gemma 3 (4B)*, *Gemma 4 (E4B)*, or any custom HuggingFace/local model ID.
+* Click the **Globe (🌐)** button to enable live web search while retaining your personal memory profile.
+
+
+2. **Long-Term Memory Inspector (`互動與記憶 → 記憶筆記管理`)**:
+* Inspect everything Tsukuyomi remembers about you, manually add core facts, or edit/delete individual memory entries in real time.
+
+
+3. **Code & Paper Hybrid RAG (`+` Quick Menu & Right Panel)**:
+* Upload individual `.pdf`, `.cpp`, `.h`, `.py`, `.tex`, `.md` files or an entire project folder.
+* Toggle specific files on/off in the right-side **Local RAG** panel so Tsukuyomi cites exact **line numbers (`Lines X-Y`)** or **page numbers (`Page P`)** only from the files you select.
+
+
+4. **Autonomous Research Studio (`Research`)**:
+* Enter a research topic to automatically plan an outline, crawl web sources, and compile a structured report with Markdown/JSON/TXT export.
+
+
+5. **Personalized Settings (`⚙️ Settings`)**:
+* Adjust theme, font size, Tavily API Key, `CHAT_MODEL`, `RESEARCH_MODEL`, `MEMORY_MODEL_ID`, `MAX_TOKENS`, `MAX_MEMORY`, and `MAX_FACTS_PER_USER` in real time.
+
+
 
 ---
 
@@ -182,7 +212,7 @@ Open your browser and navigate to:
 Tsukuyomi prefixes her responses with an emotion tag (automatically stripped from the chat bubble and used to trigger Live2D motions and intimacy weights):
 
 | Emotion Tag | Live2D Expression | Intimacy Weight | Behavior Description |
-| :--- | :--- | :---: | :--- |
+| --- | --- | --- | --- |
 | `[emotion:joy]` | Happy / Laugh | `+1` | Positive feedback, excitement, warm encouragement |
 | `[emotion:cute]` | Winking / Playful | `+1` | Sweet, coy, or affectionate maid remarks |
 | `[emotion:shy]` | Blushing | `+2` | Embarrassment or deep affection |
@@ -196,7 +226,7 @@ Tsukuyomi prefixes her responses with an emotion tag (automatically stripped fro
 
 1. **VOICEVOX**: Voice synthesis powered by **VOICEVOX** using the **Catshibi (猫使ビィ)** voicebank, subject to the [VOICEVOX Terms of Use](https://voicevox.hiroshiba.jp/term/).
 2. **Live2D Model**: The sample model **"Hiyori Momose (桃瀬日和)"** is property of Live2D Inc. and is used strictly for **non-commercial, personal learning, and academic research purposes** under the [Live2D Free Material License](https://www.live2d.com/eula/live2d-sample-model-terms_en.html).
-3. **Open-Source Ecosystem**: Powered by [MLX](https://github.com/ml-explore/mlx), [HuggingFace Transformers](https://github.com/huggingface/transformers), [LangChain](https://github.com/langchain-ai/langchain), [ChromaDB](https://www.trychroma.com/), [FastAPI](https://fastapi.tiangolo.com/), and [Tavily](https://tavily.com/).
+3. **Open-Source Ecosystem**: Powered by [MLX](https://github.com/ml-explore/mlx), [HuggingFace Transformers](https://github.com/huggingface/transformers), [Sentence-Transformers](https://www.sbert.net/), [ChromaDB](https://www.trychroma.com/), [FastAPI](https://fastapi.tiangolo.com/), and [Tavily](https://tavily.com/).
 
 ---
 
