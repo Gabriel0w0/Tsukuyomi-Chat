@@ -135,7 +135,7 @@ graph TD
 ### 1. Clone the Repository
 
 ```bash
-git clone [https://github.com/Gabriel0w0/tsukuyomi-chat.git](https://github.com/Gabriel0w0/tsukuyomi-chat.git)
+git clone https://github.com/Gabriel0w0/tsukuyomi-chat.git
 cd tsukuyomi-chat
 
 ```
