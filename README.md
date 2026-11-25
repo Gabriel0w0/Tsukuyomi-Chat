@@ -5,7 +5,7 @@
 ![Apple Silicon MLX](https://img.shields.io/badge/Apple_Silicon-MLX_Metal-black?logo=apple&logoColor=white)
 ![Live2D](https://img.shields.io/badge/Live2D-Cubism_4-ff69b4)
 
-An interactive, emotionally expressive virtual desktop companion and local AI research assistant built with a **Zero-LangChain native architecture**. **Tsukuyomi-chan (月讀醬)** seamlessly integrates **Live2D animation**, **real-time interruptible token streaming with Chain-of-Thought (CoT) folding**, a **four-stage structured long-term memory system**, **cross-platform GPU acceleration (macOS MLX & Windows/Linux CUDA)**, and a **Hybrid Local/Web RAG engine** into a unified glassmorphism web experience.
+An interactive, emotionally expressive virtual desktop companion and local AI research assistant built with a **Zero-LangChain native architecture**. **Tsukuyomi-chan (月讀醬)** seamlessly integrates **Live2D animation**, **real-time interruptible token streaming with Chain-of-Thought (CoT) folding**, a **four-stage structured long-term memory system**, **GPU acceleration support for Apple Silicon (MLX), with experimental Windows/Linux CUDA support.**, and a **Hybrid Local/Web RAG engine** into a unified glassmorphism web experience.
 
 <p align="center">
   <img src="docs/screenshots/chat-live2d.png" alt="Tsukuyomi Chat Main Interface" width="92%">
@@ -51,7 +51,7 @@ An interactive, emotionally expressive virtual desktop companion and local AI re
   * Dynamic affection progression (`冷淡期` → `普通期` → `親密期` → `羈絆期`) with exponential smoothing and persistent SQLite storage.
 * **🚀 Cross-Platform Dual Inference Engine (`mlx_engine.py`)**:
   * **macOS (Apple Silicon)**: Native **MLX (`mlx-lm`)** acceleration running on a dedicated single-thread Metal GPU worker (`ThreadPoolExecutor(max_workers=1)`) with explicit stream binding—completely eliminating cross-thread Metal stream crashes.
-  * **Windows / Linux (NVIDIA CUDA)**: Automatic fallback to **PyTorch `transformers`** + **`bitsandbytes` (4-bit NF4 / 8-bit)** quantization and `TextIteratorStreamer`, featuring automatic model ID mapping from `mlx-community/*` to standard HuggingFace repositories.
+  * **Windows / Linux (NVIDIA CUDA) (experimental)**: Automatic fallback to **PyTorch `transformers`** + **`bitsandbytes` (4-bit NF4 / 8-bit)** quantization and `TextIteratorStreamer`, featuring automatic model ID mapping from `mlx-community/*` to standard HuggingFace repositories.
   * **Zero-Leak Hot-Swapping**: Switch between models (e.g., *Gemma 3 4B*, *Gemma 4 E4B*, *Gemma 3 12B*) directly from the UI with explicit weight unloading and VRAM/Unified Memory cache clearing.
 * **🧠 Four-Stage Long-Term Memory System (`memory_manager.py`) & Memory Inspector**:
   * **Storage**: Dual-track storage combining a structured SQLite table (`memory_items` with `core` / `preference` / `episodic` types, importance scores, timestamps, and access counts) with ChromaDB semantic vectors (reusing the shared `BGE-Small` embedder) and automatic migration from legacy memory tables.
