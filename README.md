@@ -20,24 +20,24 @@ An interactive, emotionally expressive virtual desktop companion and local AI re
     <td align="center" width="50%">
       <img src="docs/screenshots/chat-live2d.png" alt="Interactive Chat & Live2D" width="100%">
       <br>
-      <sub><b>💬 Interactive Chat & Live2D</b> — Real-time NDJSON streaming, CoT folding, and instant stop control</sub>
+      <sub><b>💬 Interactive Chat & Live2D</b></sub>
     </td>
     <td align="center" width="50%">
       <img src="docs/screenshots/memory-inspector.png" alt="Memory Inspector Modal" width="100%">
       <br>
-      <sub><b>🧠 Memory Inspector</b> — View, add, edit, and manage structured long-term memories</sub>
+      <sub><b>🧠 Memory Inspector</b></sub>
     </td>
   </tr>
   <tr>
     <td align="center" width="50%">
       <img src="docs/screenshots/local-rag.png" alt="Hybrid Local RAG Panel" width="100%">
       <br>
-      <sub><b>📎 Hybrid Local RAG</b> — Per-file retrieval toggles with exact line & page citations</sub>
+      <sub><b>📎 Hybrid Local RAG</b></sub>
     </td>
     <td align="center" width="50%">
       <img src="docs/screenshots/research-studio.png" alt="Autonomous Research Studio" width="100%">
       <br>
-      <sub><b>🌐 Autonomous Research Studio</b> — Multi-section report synthesis & Markdown/JSON export</sub>
+      <sub><b>🌐 Autonomous Research Studio</b></sub>
     </td>
   </tr>
 </table>
