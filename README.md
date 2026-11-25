@@ -5,7 +5,7 @@
 ![Apple Silicon MLX](https://img.shields.io/badge/Apple_Silicon-MLX_Metal-black?logo=apple&logoColor=white)
 ![Live2D](https://img.shields.io/badge/Live2D-Cubism_4-ff69b4)
 
-An interactive, emotionally expressive virtual desktop companion and local AI research assistant built with a **Zero-LangChain native architecture**. **Tsukuyomi-chan (月讀醬)** seamlessly integrates **Live2D animation**, **real-time interruptible token streaming with Chain-of-Thought (CoT) folding**, a **four-stage structured long-term memory system**, **GPU acceleration support for Apple Silicon (MLX), with experimental Windows/Linux CUDA support.**, and a **Hybrid Local/Web RAG engine** into a unified glassmorphism web experience.
+An interactive, emotionally expressive virtual desktop companion and local AI research assistant built with a **Zero-LangChain native architecture**. **Tsukuyomi-chan (月讀醬)** seamlessly integrates **Live2D animation**, **real-time interruptible token streaming with Chain-of-Thought (CoT) folding**, a **four-stage structured long-term memory system**, **native Apple Silicon (MLX) GPU acceleration (with experimental Windows/Linux CUDA support)**, and a **Hybrid Local/Web RAG engine** into a unified glassmorphism web experience.
 
 <p align="center">
   <img src="docs/screenshots/chat-live2d.png" alt="Tsukuyomi Chat Main Interface" width="92%">
