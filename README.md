@@ -3,10 +3,44 @@
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.143%2B-009688?logo=fastapi&logoColor=white)
 ![Apple Silicon MLX](https://img.shields.io/badge/Apple_Silicon-MLX_Metal-black?logo=apple&logoColor=white)
-![NVIDIA CUDA](https://img.shields.io/badge/NVIDIA-CUDA_BitsAndBytes-76B900?logo=nvidia&logoColor=white)
 ![Live2D](https://img.shields.io/badge/Live2D-Cubism_4-ff69b4)
 
 An interactive, emotionally expressive virtual desktop companion and local AI research assistant built with a **Zero-LangChain native architecture**. **Tsukuyomi-chan (月讀醬)** seamlessly integrates **Live2D animation**, **real-time interruptible token streaming with Chain-of-Thought (CoT) folding**, a **four-stage structured long-term memory system**, **cross-platform GPU acceleration (macOS MLX & Windows/Linux CUDA)**, and a **Hybrid Local/Web RAG engine** into a unified glassmorphism web experience.
+
+<p align="center">
+  <img src="docs/screenshots/chat-live2d.png" alt="Tsukuyomi Chat Main Interface" width="92%">
+</p>
+
+---
+
+## 📸 Screenshots
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/screenshots/chat-live2d.png" alt="Interactive Chat & Live2D" width="100%">
+      <br>
+      <sub><b>💬 Interactive Chat & Live2D</b> — Real-time NDJSON streaming, CoT folding, and instant stop control</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/screenshots/memory-inspector.png" alt="Memory Inspector Modal" width="100%">
+      <br>
+      <sub><b>🧠 Memory Inspector</b> — View, add, edit, and manage structured long-term memories</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/screenshots/local-rag.png" alt="Hybrid Local RAG Panel" width="100%">
+      <br>
+      <sub><b>📎 Hybrid Local RAG</b> — Per-file retrieval toggles with exact line & page citations</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/screenshots/research-studio.png" alt="Autonomous Research Studio" width="100%">
+      <br>
+      <sub><b>🌐 Autonomous Research Studio</b> — Multi-section report synthesis & Markdown/JSON export</sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -101,7 +135,7 @@ graph TD
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Gabriel0w0/tsukuyomi-chat.git
+git clone [https://github.com/Gabriel0w0/tsukuyomi-chat.git](https://github.com/Gabriel0w0/tsukuyomi-chat.git)
 cd tsukuyomi-chat
 
 ```
@@ -132,7 +166,7 @@ python -m pip install -r requirements.txt
 
 # 3. Force-install PyTorch with NVIDIA CUDA support (prevents CPU-only overwrite)
 python -m pip uninstall -y torch torchvision torchaudio
-python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126 --no-deps
+python -m pip install torch torchvision torchaudio --index-url [https://download.pytorch.org/whl/cu126](https://download.pytorch.org/whl/cu126) --no-deps
 
 # 4. Verify GPU detection (should print: True | NVIDIA GeForce ...)
 python -c "import torch; print(torch.cuda.is_available(), '|', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'No GPU')"
@@ -177,7 +211,7 @@ uvicorn app:app --host 127.0.0.1 --port 5000 --reload
 ```
 
 Open your browser and navigate to:
-👉 **`[http://127.0.0.1:5000](http://127.0.0.1:5000)`**
+👉 **`http://127.0.0.1:5000`**
 
 ### Core Workflows:
 
@@ -197,7 +231,7 @@ Open your browser and navigate to:
 
 
 4. **Autonomous Research Studio (`Research`)**:
-* Enter a research topic to automatically plan an outline, crawl web sources, and compile a structured report with Markdown/JSON/TXT export.
+* Enter a research topic to automatically plan an outline, crawl web sources, and compile a structured report with Markdown/JSON export.
 
 
 5. **Personalized Settings (`⚙️ Settings`)**:
@@ -231,4 +265,3 @@ Tsukuyomi prefixes her responses with an emotion tag (automatically stripped fro
 ---
 
 > **Disclaimer**: This project is developed strictly for academic research and personal educational purposes. Any commercial distribution or unauthorized use of third-party assets is prohibited.
-
